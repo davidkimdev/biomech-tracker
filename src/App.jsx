@@ -1,29 +1,52 @@
 import { useState, useEffect } from 'react'
+import { supabase } from './supabaseClient' // Importing the bridge we just built
 import Navbar from './Navbar'
 import InputForm from './InputForm'
 import HistoryList from './HistoryList'
 
 export default function App() {
-  // 1. Load data from browser memory on startup
-  const [history, setHistory] = useState(() => {
-    const saved = localStorage.getItem('biomech-data')
-    return saved ? JSON.parse(saved) : []
-  })
+  const [history, setHistory] = useState([])
 
-  // 2. Save data to browser memory whenever history changes
+  // 1. FETCH: Run this when the app starts
   useEffect(() => {
-    localStorage.setItem('biomech-data', JSON.stringify(history))
-  }, [history])
+    fetchWorkouts()
+  }, [])
 
-  const addWorkout = (exercise, weight, reps) => {
-    const newWorkout = {
-      id: Date.now(),
-      exercise: exercise,
-      weight: weight,
-      reps: reps,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) // Real time
+  const fetchWorkouts = async () => {
+    // Talk to Supabase
+    const { data, error } = await supabase
+      .from('workouts')
+      .select('*')
+      .order('created_at', { ascending: false }) // Newest first
+
+    if (error) {
+      console.log('Error fetching:', error)
+    } else {
+      // Format the raw data so it looks nice in our list
+      const formattedData = data.map(item => ({
+        ...item,
+        time: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }))
+      setHistory(formattedData)
     }
-    setHistory([newWorkout, ...history]) 
+  }
+
+  // 2. INSERT: Run this when you click "Log Data"
+  const addWorkout = async (exercise, weight, reps) => {
+    // Send data to the Cloud
+    const { error } = await supabase
+      .from('workouts')
+      .insert([
+        { exercise: exercise, weight: weight, reps: reps }
+      ])
+
+    if (error) {
+      console.error('Error inserting:', error)
+      alert('Error saving data!')
+    } else {
+      // If successful, re-fetch the list to see the new item immediately
+      fetchWorkouts()
+    }
   }
 
   return (
@@ -34,7 +57,7 @@ export default function App() {
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">Session Active</h2>
           <p className="text-gray-400">
-            System memory: <span className="text-green-500 font-bold">PERSISTENT</span>
+            System memory: <span className="text-blue-500 font-bold">CLOUD SYNC</span>
           </p>
         </div>
 
