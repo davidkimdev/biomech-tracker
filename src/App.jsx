@@ -4,6 +4,7 @@ import Navbar from './Navbar'
 import InputForm from './InputForm'
 import HistoryList from './HistoryList'
 import Auth from './Auth' // Import the new Login Screen
+import ProgressChart from './ProgressChart'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -98,6 +99,10 @@ export default function App() {
         </div>
 
         <InputForm onAdd={addWorkout} />
+        
+        {/* NEW: The Visuals - Inserted here */}
+        <ProgressChart data={history} />
+
         <HistoryList data={history} />
       </main>
     </div>
