@@ -1,73 +1,71 @@
 import { useState } from 'react'
 
-export default function InputForm({ onAdd }) {
-  // Local state to track what the user types
+export default function InputForm({ onAdd, uniqueExercises = [] }) {
   const [exercise, setExercise] = useState('')
   const [weight, setWeight] = useState('')
   const [reps, setReps] = useState('')
 
-  const handleSubmit = () => {
-    // 1. Validation (Don't submit empty)
-    if (!exercise || !weight || !reps) return;
-
-    // 2. Send data up to App
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!exercise || !weight || !reps) return
     onAdd(exercise, weight, reps)
-
-    // 3. Clear the form
     setExercise('')
     setWeight('')
     setReps('')
   }
 
   return (
-    <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-xl mb-6">
-      <h3 className="text-gray-400 text-sm font-bold uppercase mb-4 tracking-wider">
-        Log New Set
-      </h3>
-      
-      <div className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-900 rounded-xl border border-gray-800 shadow-lg">
+      <div className="grid grid-cols-1 gap-4">
+        {/* Exercise Input with Autocomplete */}
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">Exercise</label>
-          <input 
-            type="text" 
+          <label className="block text-gray-400 text-xs uppercase font-bold mb-1 ml-1">Exercise</label>
+          <input
+            className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700 focus:border-blue-500 outline-none transition-all placeholder-gray-600"
+            type="text"
+            placeholder="e.g. Bench Press"
             value={exercise}
             onChange={(e) => setExercise(e.target.value)}
-            placeholder="e.g. Bench Press" 
-            className="w-full bg-gray-900 text-white border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+            list="exercise-options" // Connects to the datalist below
           />
+          {/* This hidden list powers the autocomplete */}
+          <datalist id="exercise-options">
+            {uniqueExercises.map((name, index) => (
+              <option key={index} value={name} />
+            ))}
+          </datalist>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Weight (lbs)</label>
-            <input 
-              type="number" 
+            <label className="block text-gray-400 text-xs uppercase font-bold mb-1 ml-1">Weight (lbs)</label>
+            <input
+              className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700 focus:border-blue-500 outline-none transition-all placeholder-gray-600"
+              type="number"
+              placeholder="0"
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
-              placeholder="0" 
-              className="w-full bg-gray-900 text-white border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-blue-500 transition"
             />
           </div>
-          
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Reps</label>
-            <input 
-              type="number" 
+            <label className="block text-gray-400 text-xs uppercase font-bold mb-1 ml-1">Reps</label>
+            <input
+              className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700 focus:border-blue-500 outline-none transition-all placeholder-gray-600"
+              type="number"
+              placeholder="0"
               value={reps}
               onChange={(e) => setReps(e.target.value)}
-              placeholder="0" 
-              className="w-full bg-gray-900 text-white border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-blue-500 transition"
             />
           </div>
         </div>
 
-        <button 
-          onClick={handleSubmit}
-          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition-all active:scale-95 shadow-lg shadow-blue-900/20"
+        <button
+          type="submit"
+          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition-all transform active:scale-95 shadow-lg shadow-blue-900/20"
         >
-          LOG DATA +
+          Log Workout
         </button>
       </div>
-    </div>
+    </form>
   )
 }

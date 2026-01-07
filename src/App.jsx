@@ -51,22 +51,43 @@ export default function App() {
     }
   }
 
-  const addWorkout = async (exercise, weight, reps) => {
-    const { error } = await supabase
+const addWorkout = async (exercise, weight, reps) => {
+    // 1. SANITIZE: Force "Title Case" (e.g. "bench press" -> "Bench Press")
+    // This regex takes the first letter of every word and makes it Uppercase
+    const cleanExercise = exercise.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+
+    const { data, error } = await supabase
       .from('workouts')
       .insert([
         { 
-          exercise, 
-          weight: Number(weight), 
-          reps: Number(reps),
-          user_id: session.user.id // <--- CRITICAL: Stamp it with MY ID
+          exercise: cleanExercise, // Use the clean version
+          weight: parseFloat(weight), 
+          reps: parseInt(reps),
+          user_id: session.user.id 
         }
       ])
+      .select()
 
-    if (error) alert('Error saving data!')
-    else fetchWorkouts()
+    if (error) {
+      console.error('Error adding workout:', error)
+    } else {
+      setHistory([data[0], ...history])
+    }
   }
+const deleteWorkout = async (id) => {
+    // 1. Tell Supabase to delete the row with this specific ID
+    const { error } = await supabase
+      .from('workouts')
+      .delete()
+      .eq('id', id)
 
+    if (error) {
+      console.error('Error deleting:', error)
+    } else {
+      // 2. Update the local screen immediately (remove it from the list)
+      setHistory(history.filter(item => item.id !== id))
+    }
+  }
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setHistory([]) // Clear screen
@@ -76,7 +97,11 @@ export default function App() {
   if (!session) {
     return <Auth /> // If no user, show Login Screen
   }
-
+  // EXTRACT UNIQUE EXERCISES
+  // 1. Get all names
+  // 2. Use 'Set' to remove duplicates
+  // 3. Convert back to array
+  const uniqueExercises = [...new Set(history.map(item => item.exercise))]
   // If user exists, show the Tracker
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-blue-500 selection:text-white">
@@ -98,12 +123,13 @@ export default function App() {
           </button>
         </div>
 
-        <InputForm onAdd={addWorkout} />
+        {/* Pass the list of names to the form */}
+        <InputForm onAdd={addWorkout} uniqueExercises={uniqueExercises} />
         
         {/* NEW: The Visuals - Inserted here */}
         <ProgressChart data={history} />
 
-        <HistoryList data={history} />
+        <HistoryList data={history} onDelete={deleteWorkout} />
       </main>
     </div>
   )
