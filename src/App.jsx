@@ -88,6 +88,22 @@ const deleteWorkout = async (id) => {
       setHistory(history.filter(item => item.id !== id))
     }
   }
+  const updateWorkout = async (id, newWeight, newReps) => {
+    // 1. Update Supabase
+    const { error } = await supabase
+      .from('workouts')
+      .update({ weight: parseFloat(newWeight), reps: parseInt(newReps) })
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error updating:', error)
+    } else {
+      // 2. Update local state
+      setHistory(history.map(item => 
+        item.id === id ? { ...item, weight: parseFloat(newWeight), reps: parseInt(newReps) } : item
+      ))
+    }
+  }
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setHistory([]) // Clear screen
@@ -129,7 +145,7 @@ const deleteWorkout = async (id) => {
         {/* NEW: The Visuals - Inserted here */}
         <ProgressChart data={history} />
 
-        <HistoryList data={history} onDelete={deleteWorkout} />
+        <HistoryList data={history} onDelete={deleteWorkout} onUpdate={updateWorkout} />
       </main>
     </div>
   )

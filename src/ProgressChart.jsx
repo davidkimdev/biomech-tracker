@@ -15,10 +15,22 @@ export default function ProgressChart({ data }) {
     .filter(item => item.exercise === selectedExercise)
     .reverse(); 
 
-  // CALCULATE PR (Personal Record)
-  // We grab all weights from the filtered data and find the Max
+  // --- ANALYTICS ENGINE ---
+
+  // 1. Calculate Raw PR (Heaviest Weight moved)
   const currentPR = chartData.length > 0 
     ? Math.max(...chartData.map(item => item.weight)) 
+    : 0;
+
+  // 2. Calculate Theoretical Max (Epley Formula)
+  // Formula: Weight * (1 + Reps/30)
+  const calculateOneRepMax = (weight, reps) => {
+    if (reps === 1) return weight;
+    return Math.round(weight * (1 + reps / 30));
+  }
+
+  const theoreticalMax = chartData.length > 0
+    ? Math.max(...chartData.map(item => calculateOneRepMax(item.weight, item.reps)))
     : 0;
 
   if (data.length === 0) return null;
@@ -26,25 +38,33 @@ export default function ProgressChart({ data }) {
   return (
     <div className="w-full bg-gray-900 p-4 rounded-xl border border-gray-800 mb-6 shadow-lg">
       
-      {/* HEADER: Title + Dropdown */}
-      <div className="flex justify-between items-center mb-4">
+      {/* HEADER: Dropdown */}
+      <div className="mb-4">
         <select 
           value={selectedExercise}
           onChange={(e) => setSelectedExercise(e.target.value)}
-          className="bg-gray-800 text-white text-sm font-semibold border border-gray-700 rounded px-2 py-1 outline-none focus:border-blue-500"
+          className="bg-gray-800 text-white text-sm font-semibold border border-gray-700 rounded px-2 py-1 outline-none focus:border-blue-500 w-full"
         >
           {uniqueExercises.map(name => (
             <option key={name} value={name}>{name}</option>
           ))}
         </select>
+      </div>
 
-        {/* PR BADGE */}
-        <div className="text-right">
-          <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Personal Best</p>
+      {/* KEY METRICS GRID */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+          <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Heaviest Lift</p>
           <p className="text-2xl font-bold text-white">{currentPR} <span className="text-sm text-blue-500">lbs</span></p>
+        </div>
+        
+        <div className="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+          <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Est. 1 Rep Max</p>
+          <p className="text-2xl font-bold text-white">{theoreticalMax} <span className="text-sm text-purple-500">lbs</span></p>
         </div>
       </div>
 
+      {/* GRAPH */}
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData}>
@@ -62,6 +82,7 @@ export default function ProgressChart({ data }) {
               contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', color: '#fff' }}
               itemStyle={{ color: '#60A5FA' }}
               labelStyle={{ display: 'none' }}
+              formatter={(value) => [`${value} lbs`, 'Weight']}
             />
             <Line 
               type="monotone" 
