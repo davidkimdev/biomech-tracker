@@ -7,8 +7,13 @@ export default function InputForm({ onAdd, uniqueExercises = [] }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!exercise || !weight || !reps) return
+    
+    // --- CHANGE IS HERE ---
+    // We removed the "if (!exercise...)" check.
+    // We pass EVERYTHING to App.jsx so the Toast can handle the errors.
     onAdd(exercise, weight, reps)
+
+    // Clear form (For the video, it's fine if it clears on error)
     setExercise('')
     setWeight('')
     setReps('')
@@ -26,9 +31,8 @@ export default function InputForm({ onAdd, uniqueExercises = [] }) {
             placeholder="e.g. Bench Press"
             value={exercise}
             onChange={(e) => setExercise(e.target.value)}
-            list="exercise-options" // Connects to the datalist below
+            list="exercise-options" 
           />
-          {/* This hidden list powers the autocomplete */}
           <datalist id="exercise-options">
             {uniqueExercises.map((name, index) => (
               <option key={index} value={name} />
@@ -42,6 +46,7 @@ export default function InputForm({ onAdd, uniqueExercises = [] }) {
             <input
               className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700 focus:border-blue-500 outline-none transition-all placeholder-gray-600"
               type="number"
+              step="any"   
               placeholder="0"
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
@@ -52,6 +57,7 @@ export default function InputForm({ onAdd, uniqueExercises = [] }) {
             <input
               className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700 focus:border-blue-500 outline-none transition-all placeholder-gray-600"
               type="number"
+              step="1"   
               placeholder="0"
               value={reps}
               onChange={(e) => setReps(e.target.value)}

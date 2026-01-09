@@ -10,6 +10,10 @@ export default function App() {
   const [session, setSession] = useState(null)
   const [history, setHistory] = useState([])
 
+
+// Toast State
+  const [toast, setToast] = useState(null); // stores the error message (e.g. "Invalid Weight")
+
   // 1. AUTH LISTENER: Check if user is logged in
   useEffect(() => {
     // Get initial session
@@ -52,40 +56,55 @@ export default function App() {
   }
 
 const addWorkout = async (exercise, weight, reps) => {
-    // 1. SANITIZE: Force "Title Case" (e.g. "bench press" -> "Bench Press")
-    // This regex takes the first letter of every word and makes it Uppercase
+    // Helper to show toast for 3 seconds
+    const showError = (msg) => {
+      setToast(msg);
+      setTimeout(() => setToast(null), 3000); // Disappears after 3s
+    };
+
+    // 1. Check Name
+    if (!exercise || !exercise.trim()) {
+      showError("Please enter an exercise name.");
+      return;
+    }
+
+    const numWeight = parseFloat(weight);
+    const numReps = parseFloat(reps); // logic uses floats, DB uses int for reps
+
+    // 2. Check Math
+    if (isNaN(numWeight) || numWeight <= 0) {
+      showError("Weight must be a positive number.");
+      return;
+    }
+    // Note: We allow decimals for weight now!
+
+    if (isNaN(numReps) || numReps <= 0) {
+      showError("Reps must be a positive number.");
+      return;
+    }
+
+    // 3. Success -> Send to DB
     const cleanExercise = exercise.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
 
     const { data, error } = await supabase
       .from('workouts')
       .insert([
         { 
-          exercise: cleanExercise, // Use the clean version
-          weight: parseFloat(weight), 
-          reps: parseInt(reps),
+          exercise: cleanExercise, 
+          weight: numWeight, 
+          reps: Math.floor(numReps), // Force integer for Reps only
           user_id: session.user.id 
         }
       ])
       .select()
 
     if (error) {
-      console.error('Error adding workout:', error)
+      showError("Database Error: " + error.message);
     } else {
-      setHistory([data[0], ...history])
-    }
-  }
-const deleteWorkout = async (id) => {
-    // 1. Tell Supabase to delete the row with this specific ID
-    const { error } = await supabase
-      .from('workouts')
-      .delete()
-      .eq('id', id)
-
-    if (error) {
-      console.error('Error deleting:', error)
-    } else {
-      // 2. Update the local screen immediately (remove it from the list)
-      setHistory(history.filter(item => item.id !== id))
+      // OPTIONAL: Show a green "Success" toast? 
+      // For now, let's just clear errors and update the list.
+      setHistory([data[0], ...history]);
+      setToast(null); 
     }
   }
   const updateWorkout = async (id, newWeight, newReps) => {
@@ -102,6 +121,20 @@ const deleteWorkout = async (id) => {
       setHistory(history.map(item => 
         item.id === id ? { ...item, weight: parseFloat(newWeight), reps: parseInt(newReps) } : item
       ))
+    }
+  }
+  const deleteWorkout = async (id) => {
+    // 1. Delete from Supabase
+    const { error } = await supabase
+      .from('workouts')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error deleting:', error)
+    } else {
+      // 2. Remove from local state
+      setHistory(history.filter(item => item.id !== id))
     }
   }
   const handleLogout = async () => {
@@ -147,6 +180,14 @@ const deleteWorkout = async (id) => {
 
         <HistoryList data={history} onDelete={deleteWorkout} onUpdate={updateWorkout} />
       </main>
+{/* THE TOAST NOTIFICATION */}
+      {toast && (
+        <div className="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-full shadow-xl z-50 transition-all font-bold flex items-center gap-2">
+          <span>⚠️</span>
+          {toast}
+        </div>
+      )}
+
     </div>
   )
 }
