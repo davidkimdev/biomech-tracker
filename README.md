@@ -37,5 +37,5 @@ Waiting for a database re-fetch caused a 3-5 second delay before new points appe
 
 1. **Clone the repo**
    ```bash
-   git clone [https://github.com/davidkimdev/biomech-tracker.git](https://github.com/davidkimdev/biomech-tracker.git)
+   git clone https://github.com/davidkimdev/biomech-tracker.git
    cd biomech-tracker
