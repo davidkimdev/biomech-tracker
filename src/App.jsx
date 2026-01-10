@@ -59,7 +59,7 @@ const addWorkout = async (exercise, weight, reps) => {
     // Helper to show toast for 3 seconds
     const showError = (msg) => {
       setToast(msg);
-      setTimeout(() => setToast(null), 3000); // Disappears after 3s
+      setTimeout(() => setToast(null), 3000); 
     };
 
     // 1. Check Name
@@ -69,14 +69,13 @@ const addWorkout = async (exercise, weight, reps) => {
     }
 
     const numWeight = parseFloat(weight);
-    const numReps = parseFloat(reps); // logic uses floats, DB uses int for reps
+    const numReps = parseFloat(reps); 
 
     // 2. Check Math
     if (isNaN(numWeight) || numWeight <= 0) {
       showError("Weight must be a positive number.");
       return;
     }
-    // Note: We allow decimals for weight now!
 
     if (isNaN(numReps) || numReps <= 0) {
       showError("Reps must be a positive number.");
@@ -92,7 +91,7 @@ const addWorkout = async (exercise, weight, reps) => {
         { 
           exercise: cleanExercise, 
           weight: numWeight, 
-          reps: Math.floor(numReps), // Force integer for Reps only
+          reps: Math.floor(numReps), 
           user_id: session.user.id 
         }
       ])
@@ -101,9 +100,16 @@ const addWorkout = async (exercise, weight, reps) => {
     if (error) {
       showError("Database Error: " + error.message);
     } else {
-      // OPTIONAL: Show a green "Success" toast? 
-      // For now, let's just clear errors and update the list.
-      setHistory([data[0], ...history]);
+      // --- THE FIX IS HERE ---
+      const newItem = data[0];
+      
+      // We manually format the time right now so we don't have to wait for a refresh
+      const formattedItem = {
+        ...newItem,
+        time: new Date(newItem.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      setHistory([formattedItem, ...history]);
       setToast(null); 
     }
   }
