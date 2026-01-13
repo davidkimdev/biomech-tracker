@@ -28,9 +28,9 @@ I built this because most fitness apps are bloated with social features or don't
 Standard SQL integer columns round `12.5 lbs` down to `12`, making accurate tracking impossible for cable exercises or small increments.
 * **Solution:** Engineered the PostgreSQL schema to use `float4` for weight precision, while strictly enforcing `integer` types for reps via a custom client-side validation layer.
 
-**2. Zero-Latency Graph Updates**
-Waiting for a database re-fetch caused a 3-5 second delay before new points appeared on the graph.
-* **Solution:** Implemented an optimistic update pattern. The app manually formats and hydrates the local state with the new data point immediately after the write succeeds, forcing the Recharts graph to render the new node instantly without a network round-trip.
+**2. Zero-Latency Graph Updates Challenge**
+Waiting for a full database re-fetch after every log caused a 3-5 second delay before new points appeared on the graph, breaking the user's flow. 
+* **Solution:** Implemented a reactive local cache update. The app captures the database response and manually hydrates the local React state with the formatted data point immediately, forcing the Recharts graph to render the new node instantly without triggering a redundant network round-trip.
 
 **3. Non-Blocking Error Handling**
 * **Solution:** Instead of using disruptive `window.alert()` calls, I built a custom, lightweight Toast notification system. This handles edge cases (e.g., negative numbers) and provides user feedback without freezing the browser or increasing bundle size with external UI libraries.
