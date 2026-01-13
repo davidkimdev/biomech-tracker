@@ -6,7 +6,7 @@ A data-driven workout logger designed for serious lifters.
 
 I built this because most fitness apps are bloated with social features or don't handle "micro-loading" (fractional weights) correctly. This app focuses on one thing: **Accurate, distraction-free tracking.**
 
-**https://biomech-tracker.vercel.app/** | **[📺 Video Walkthrough](LINK_TO_LOOM_OR_YOUTUBE)**
+**https://biomech-tracker.vercel.app/** | **[📺 Video Walkthrough](https://youtu.be/LxULpT60rlQ)**
 
 <img width="576" height="922" alt="image" src="https://github.com/user-attachments/assets/919c7ca7-8ee6-40a2-91c3-3305b510e790" />
 
