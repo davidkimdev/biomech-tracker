@@ -15,7 +15,7 @@ I built this because most fitness apps are bloated with social features or don't
 * **Visual Progression:** Visualizes **weight lifted** over time to track consistency and progressive overload trends.
 * **Auto-Calculated Analytics:** A dynamic dashboard instantly calculates your **Estimated 1-Rep Max** (using the Epley formula) based on your log history.
 * **Micro-Loading Support:** Supports fractional weights (e.g., `12.5` lbs), essential for linear progression programs.
-* **Instant Feedback:** "Optimistic" UI updates mean the app feels instant, even on slow networks.
+
 
 ## 🛠 Tech Stack
 * **Frontend:** React, Vite, Tailwind CSS, Recharts
